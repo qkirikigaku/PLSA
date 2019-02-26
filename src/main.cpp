@@ -9,7 +9,7 @@ int main(int argc,char *argv[]){
     }
     string mut_file = argv[1];
     int experiment = atoi(argv[2]);
-    run_VB_LDA(mut_file, experiment);
+    run_EM_PLSA(mut_file, experiment);
 }
 
 void run_EM_PLSA(string mut_file, int experiment){

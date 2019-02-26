@@ -108,11 +108,6 @@ void PLSA::Update_parameter(){
     int d,i,k,v;
     // update theta: topic distriubtion
     for (d=0; d < num_doc; d++){
-        vector<double> q_dk;
-        q_dk.resize(train_doc[d].size());
-        for (i=0; i < train_doc[d].size(); i++){
-            q_dk[d][k] = qz[d][i][k];
-        }
         vector<double> q_d;
         q_d.resize(train_doc[d].size() * num_topic);
         for (i=0; i < train_doc[d].size(); i++){
@@ -121,6 +116,11 @@ void PLSA::Update_parameter(){
             }
         }
         for (k=0; k < num_topic; k++){
+            vector<double> q_dk;
+            q_dk.resize(train_doc[d].size());
+            for (i=0; i < train_doc[d].size(); i++){
+                q_dk[i] = qz[d][i][k];
+            }
             theta[d][k] = log_sum_exp(q_dk) - log_sum_exp(q_d);
         }
     }
@@ -140,7 +140,7 @@ void PLSA::Update_parameter(){
             q_k.resize(num_sum_word);
             for (d=0; d < num_doc; d++){
                 for (i=0; i < train_doc[d].size(); i++){
-                    q_k[d*i+i] = qz[d][i];
+                    q_k[d*i+i] = qz[d][i][k];
                 }
             }
             phi[k][v] = log_sum_exp(q_kv) + log_sum_exp(q_k);
