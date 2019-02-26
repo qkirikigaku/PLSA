@@ -1,0 +1,23 @@
+import sys
+import os
+from multiprocessing import Pool
+import subprocess
+
+def main():
+    arguments = []
+    for i in range(1,51):
+        for j in range(1,30):
+            arguments.append((str(j), mut_file, str(i)))
+    pool = Pool()
+    _ = pool.starmap(execute, arguments)
+
+def execute(num_topic, mut_file, experiment):
+    result_path = 'result/' + mut_file + '_' + experiment
+    if(os.path.exists(result_path) == False): os.mkdir(result_path)
+    cmd = 'bin/MS ' + num_topic + ' ' + mut_file + ' ' + experiment
+    subprocess.call(cmd.split())
+
+if __name__ == '__main__':
+    args = sys.argv
+    mut_file = args[1]
+    main()
