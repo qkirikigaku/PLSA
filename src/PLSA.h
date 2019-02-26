@@ -24,7 +24,7 @@ class PLSA {
         double temp_ll;
         double old_ll;
     public:
-        PLSA(string x, int y);
+        PLSA(int x, string y, int z);
         void run_EM();
         void initialize();
         void Update_qz();
@@ -37,8 +37,8 @@ class PLSA {
         double log_sum_exp(vector<double> &vec);
 };
 
-PLSA::PLSA(string x, int y){
-    mut_file = x; experiment = y;
+PLSA::PLSA(int x, string y, int z){
+    num_topic = x; mut_file = y; experiment = z;
 }
 
 void PLSA::run_EM(){
@@ -265,4 +265,4 @@ double PLSA::log_sum_exp(vector<double> &vec){
     return(return_value);
 }
 
-void run_EM_PLSA(string cancer_type, int experiment);
+void run_EM_PLSA(int num_topic, string cancer_type, int experiment);
