@@ -7,7 +7,7 @@ int main(int argc,char *argv[]){
         cout << "The number of argument is invalid." << endl;
         return(0);
     }
-    int num_topic = atoi(argv[1]);
+    int num_topic = atoi(argv[1]) + 1;
     string mut_file = argv[2];
     int experiment = atoi(argv[3]);
     run_EM_PLSA(num_topic, mut_file, experiment);

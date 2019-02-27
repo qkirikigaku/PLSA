@@ -91,15 +91,10 @@ void PLSA::Update_qz(){
     int d,i,k;
     for (d=0; d < num_doc; d++){
         for (i=0; i < train_doc[d].size(); i++){
-            vector<double> sum_theta_phi;
-            sum_theta_phi.resize(num_topic);
             for (k=0; k < num_topic; k++){
-                sum_theta_phi[k] = theta[d][k] + phi[k][train_doc[d][i]];
+                qz[d][i][k] = theta[d][k] + phi[k][train_doc[d][i]];
             }
-            for (k=0; k < num_topic; k++){
-                qz[d][i][k] = theta[d][k] + phi[k][train_doc[d][i]] -
-                    log_sum_exp(sum_theta_phi);
-            }
+            Normalize(qz[d][i]);
         }
     }
 }
@@ -108,27 +103,21 @@ void PLSA::Update_parameter(){
     int d,i,k,v;
     // update theta: topic distriubtion
     for (d=0; d < num_doc; d++){
-        vector<double> q_d;
-        q_d.resize(train_doc[d].size() * num_topic);
-        for (i=0; i < train_doc[d].size(); i++){
-            for (k=0; k < num_topic; k++){
-                q_d[k*i+k] = qz[d][i][k];
-            }
-        }
         for (k=0; k < num_topic; k++){
             vector<double> q_dk;
             q_dk.resize(train_doc[d].size());
             for (i=0; i < train_doc[d].size(); i++){
                 q_dk[i] = qz[d][i][k];
             }
-            theta[d][k] = log_sum_exp(q_dk) - log_sum_exp(q_d);
+            theta[d][k] = log_sum_exp(q_dk);
         }
+        Normalize(theta[d]);
     }
     // update phi: word distribution
     for (k=0; k < num_topic; k++){
         for (v=0; v < num_vocab; v++){
             vector<double> q_kv;
-            q_kv.reserve(train_doc[d].size() * num_doc);
+            q_kv.reserve(num_sum_word);
             for (d=0; d < num_doc; d++){
                 for (i=0; i < train_doc[d].size(); i++){
                     if(train_doc[d][i] == v){
@@ -136,15 +125,9 @@ void PLSA::Update_parameter(){
                     }
                 }
             }
-            vector<double> q_k;
-            q_k.resize(num_sum_word);
-            for (d=0; d < num_doc; d++){
-                for (i=0; i < train_doc[d].size(); i++){
-                    q_k[d*i+i] = qz[d][i][k];
-                }
-            }
-            phi[k][v] = log_sum_exp(q_kv) + log_sum_exp(q_k);
+            phi[k][v] = log_sum_exp(q_kv);
         }
+        Normalize(phi[k]);
     }
 }
 
@@ -152,15 +135,13 @@ void PLSA::calc_ll(){
     int d,i,k,v;
     temp_ll = 0;
     for (d=0; d < num_doc; d++){
-        for (i=0; i < train_doc.size(); i++){
+        for (i=0; i < train_doc[d].size(); i++){
             vector<double> sum_theta_phi;
             sum_theta_phi.resize(num_topic);
             for (k=0; k < num_topic; k++){
                 sum_theta_phi[k] = theta[d][k] + phi[k][train_doc[d][i]];
             }
-            for (k=0; k < num_topic; k++){
-                temp_ll += log_sum_exp(sum_theta_phi);
-            }
+            temp_ll += log_sum_exp(sum_theta_phi);
         }
     }
 }
@@ -218,19 +199,22 @@ void PLSA::write_data(){
         output_file_name += to_string(num_topic) + ".txt";
     }
     ofs.open(output_file_name, ios::out);
+    int num_param = num_doc * num_topic - 1 +
+                num_topic * num_vocab - 1;
+    double BIC = 2 * temp_ll - num_param * log(num_sum_word);
+    ofs << to_string(BIC) << "\n";
     ofs << to_string(temp_ll) << "\n";
-    ofs << "0" << "\n";
 
     int d, i, k, v;
 	for (k=0; k < num_topic; k++){
         for (v=0; v < num_vocab; v++){
-            ofs << to_string(phi[k][v]) << " ";
+            ofs << to_string(exp(phi[k][v])) << " ";
         }
         ofs << "\n";
     }
     for (d=0; d < num_doc; d++){
         for (k=0; k < num_topic; k++){
-            ofs << to_string(theta[d][k]) << " ";
+            ofs << to_string(exp(theta[d][k])) << " ";
         }
         ofs << "\n";
     }

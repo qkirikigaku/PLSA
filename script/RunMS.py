@@ -5,9 +5,8 @@ import subprocess
 
 def main():
     arguments = []
-    for i in range(1,51):
-        for j in range(1,30):
-            arguments.append((str(j), mut_file, str(i)))
+    for i in range(1,20):
+        arguments.append((str(i), mut_file, experiment))
     pool = Pool()
     _ = pool.starmap(execute, arguments)
 
@@ -20,4 +19,5 @@ def execute(num_topic, mut_file, experiment):
 if __name__ == '__main__':
     args = sys.argv
     mut_file = args[1]
+    experiment = args[2]
     main()
